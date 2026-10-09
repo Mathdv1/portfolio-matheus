@@ -768,18 +768,8 @@ button { border: 0; }
 
 
 /* Efeito parallax */
-.hero-text,
-.profile-photo-card,
-.code-card,
-.section-title,
-.skill-card,
-.project-card,
-.contact-card {
-  will-change: transform;
-}
-
 .parallax-smooth {
-  transition: transform 0.18s ease-out;
+  transition: translate 0.18s ease-out, transform 0.2s ease, border-color 0.2s ease;
 }
 
 @media (prefers-reduced-motion: reduce) {
