@@ -783,6 +783,13 @@ button { border: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+
+  .profile-photo-card,
+  .profile-photo-card::before {
+    animation: none;
+  }
+
   .hero-text,
   .profile-photo-card,
   .code-card,
@@ -792,5 +799,16 @@ button { border: 0; }
   .contact-card {
     transform: none !important;
     transition: none !important;
+  }
+
+  /* Preserve a centralização do card ao desativar o movimento. */
+  .code-card {
+    transform: translateX(-50%) rotate(-4deg) !important;
+  }
+
+  @media (max-width: 900px) {
+    .code-card {
+      transform: translateX(-50%) rotate(-3deg) !important;
+    }
   }
 }
