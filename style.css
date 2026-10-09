@@ -765,3 +765,32 @@ button { border: 0; }
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
+
+
+/* Efeito parallax */
+.hero-text,
+.profile-photo-card,
+.code-card,
+.section-title,
+.skill-card,
+.project-card,
+.contact-card {
+  will-change: transform;
+}
+
+.parallax-smooth {
+  transition: transform 0.18s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-text,
+  .profile-photo-card,
+  .code-card,
+  .section-title,
+  .skill-card,
+  .project-card,
+  .contact-card {
+    transform: none !important;
+    transition: none !important;
+  }
+}
