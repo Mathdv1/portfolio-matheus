@@ -73,6 +73,12 @@ function renderParallax() {
 
   // Leia as posições antes de aplicar o movimento.
   const heroScroll = clamp(window.scrollY, 700);
+  // Luzes de fundo em velocidades diferentes reforçam a profundidade.
+  const travel = Math.sin(window.scrollY / 650);
+  document.body.style.setProperty("--ambient-x", `${(mouseX * 70).toFixed(2)}px`);
+  document.body.style.setProperty("--ambient-y", `${(mouseY * 45 + travel * 90).toFixed(2)}px`);
+  document.body.style.setProperty("--ambient-reverse-x", `${(mouseX * -50).toFixed(2)}px`);
+  document.body.style.setProperty("--ambient-reverse-y", `${(mouseY * -30 - travel * 65).toFixed(2)}px`);
   const offsets = scrollLayers.map((element, index) => {
     const rect = element.getBoundingClientRect();
     // Remova o deslocamento anterior para evitar realimentação.
@@ -107,7 +113,10 @@ function updateParallax() {
   mouseX = 0;
   mouseY = 0;
   pointerSection = null;
+  document.body.classList.toggle("parallax-active", active);
   if (!active) {
+    ["--ambient-x", "--ambient-y", "--ambient-reverse-x", "--ambient-reverse-y"]
+      .forEach((property) => document.body.style.removeProperty(property));
     window.cancelAnimationFrame(frame);
     frame = 0;
     layers.forEach((element) => {

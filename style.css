@@ -802,3 +802,45 @@ button { border: 0; }
     }
   }
 }
+
+/* Duas camadas decorativas de luz, atrás do conteúdo de todas as seções. */
+body { isolation: isolate; }
+
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  inset: -120px;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.45;
+  transition: transform 0.65s ease-out, opacity 0.5s ease;
+}
+
+body::before {
+  background:
+    radial-gradient(ellipse 420px 380px at 18% 28%, rgba(75, 135, 255, 0.26), transparent 75%),
+    radial-gradient(ellipse 380px 440px at 86% 78%, rgba(75, 135, 255, 0.16), transparent 75%);
+  transform: translate3d(var(--ambient-x, 0px), var(--ambient-y, 0px), 0);
+}
+
+body::after {
+  background:
+    radial-gradient(ellipse 430px 340px at 82% 35%, rgba(110, 240, 202, 0.20), transparent 75%),
+    radial-gradient(ellipse 280px 310px at 24% 82%, rgba(110, 240, 202, 0.12), transparent 75%);
+  transform: translate3d(var(--ambient-reverse-x, 0px), var(--ambient-reverse-y, 0px), 0);
+}
+
+body.parallax-active::before,
+body.parallax-active::after {
+  opacity: 1;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::before,
+  body::after {
+    transform: none;
+    transition: none;
+  }
+}
