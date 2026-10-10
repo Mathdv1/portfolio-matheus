@@ -844,3 +844,49 @@ body.parallax-active::after {
     transition: none;
   }
 }
+
+/* ============================================================
+   Parallax de fundo: símbolos de programação desfocados
+   (criados e movidos por script.js, em 3 camadas de profundidade)
+   ============================================================ */
+.bg-symbols {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+}
+
+.bg-symbol {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: block;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+  will-change: translate, rotate;
+}
+
+.bg-symbol svg {
+  display: block;
+  width: 1em;
+  height: 1em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  overflow: visible;
+}
+
+/* Brilho suave para os símbolos parecerem luzes fora de foco */
+.bg-symbol.depth-0 { text-shadow: 0 0 18px currentColor; }
+.bg-symbol.depth-1 { text-shadow: 0 0 26px currentColor; }
+.bg-symbol.depth-2 { text-shadow: 0 0 40px currentColor; }
+
+@media (max-width: 680px) {
+  .bg-symbol.depth-2 { text-shadow: none; }
+}
