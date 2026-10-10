@@ -1,31 +1,99 @@
-const menuBtn = document.getElementById("menu-btn");
-const navLinks = document.getElementById("nav-links");
-const year = document.getElementById("year");
+/* ============================================================
+   Portfólio — Matheus Souza
+   Todo o estilo dinâmico é aplicado via CSSOM (style.setProperty,
+   classList...), compatível com a CSP do Vercel (style-src 'self').
+   ============================================================ */
 
-menuBtn.addEventListener("click", () => {
-  navLinks.classList.toggle("open");
+const root = document.documentElement;
+root.classList.add("js");
+
+const $ = (selector, scope = document) => scope.querySelector(selector);
+const $$ = (selector, scope = document) => [...scope.querySelectorAll(selector)];
+const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
+
+const store = {
+  get(key) { try { return localStorage.getItem(key); } catch { return null; } },
+  set(key, value) { try { localStorage.setItem(key, value); } catch { /* ignora */ } }
+};
+const session = {
+  get(key) { try { return sessionStorage.getItem(key); } catch { return null; } },
+  set(key, value) { try { sessionStorage.setItem(key, value); } catch { /* ignora */ } }
+};
+
+/* ---------- Ano no rodapé ---------- */
+$("#year").textContent = new Date().getFullYear();
+
+/* ---------- Menu mobile ---------- */
+const menuBtn = $("#menu-btn");
+const navLinks = $("#nav-links");
+
+function setMenu(open) {
+  navLinks.classList.toggle("open", open);
+  menuBtn.classList.toggle("open", open);
+  menuBtn.setAttribute("aria-expanded", String(open));
+}
+menuBtn.addEventListener("click", () => setMenu(!navLinks.classList.contains("open")));
+$$("a", navLinks).forEach((link) => link.addEventListener("click", () => setMenu(false)));
+
+/* ---------- Paletas de cor ---------- */
+const themePicker = $("#theme-picker");
+const themeToggle = $("#theme-toggle");
+const THEMES = ["aurora", "neon", "sunset", "ocean"];
+
+function applyTheme(name, save = true) {
+  if (!THEMES.includes(name)) name = "aurora";
+  root.dataset.theme = name;
+  if (save) store.set("theme", name);
+  readThemeColors();
+}
+
+themeToggle.addEventListener("click", (event) => {
+  event.stopPropagation();
+  const open = !themePicker.classList.contains("open");
+  themePicker.classList.toggle("open", open);
+  themeToggle.setAttribute("aria-expanded", String(open));
 });
-
-document.querySelectorAll(".nav-links a").forEach((link) => {
-  link.addEventListener("click", () => {
-    navLinks.classList.remove("open");
+$$("[data-theme-set]").forEach((button) => {
+  button.addEventListener("click", () => {
+    applyTheme(button.dataset.themeSet);
+    themePicker.classList.remove("open");
+    themeToggle.setAttribute("aria-expanded", "false");
   });
 });
+document.addEventListener("click", (event) => {
+  if (!themePicker.contains(event.target)) {
+    themePicker.classList.remove("open");
+    themeToggle.setAttribute("aria-expanded", "false");
+  }
+});
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") { themePicker.classList.remove("open"); setMenu(false); }
+});
 
-year.textContent = new Date().getFullYear();
+/* ---------- Toast + copiar Discord ---------- */
+const toast = $("#toast");
+let toastTimer = 0;
 
-const discordHeroButton = document.getElementById("discord-link");
-const discordContactButton = document.getElementById("discord-contact");
-const toast = document.getElementById("toast");
+function showToast(title, text) {
+  $("#toast-title").textContent = title;
+  $("#toast-text").textContent = text;
+  toast.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove("show"), 2600);
+}
 
 async function copyDiscord() {
   const username = "mathshenq";
-
   try {
     await navigator.clipboard.writeText(username);
-  } catch (error) {
+  } catch {
     const temp = document.createElement("textarea");
     temp.value = username;
+    temp.setAttribute("readonly", "");
     temp.style.position = "fixed";
     temp.style.opacity = "0";
     document.body.appendChild(temp);
@@ -33,273 +101,415 @@ async function copyDiscord() {
     document.execCommand("copy");
     temp.remove();
   }
-
-  toast.classList.add("show");
-  clearTimeout(window.discordToastTimer);
-  window.discordToastTimer = setTimeout(() => {
-    toast.classList.remove("show");
-  }, 2500);
+  showToast("Discord copiado!", username);
 }
+$("#discord-link")?.addEventListener("click", copyDiscord);
+$("#discord-contact")?.addEventListener("click", copyDiscord);
 
-discordHeroButton?.addEventListener("click", copyDiscord);
-discordContactButton?.addEventListener("click", copyDiscord);
+/* ---------- Barra de progresso, header e menu ativo ---------- */
+const header = $("#header");
+const sections = $$("main section[id]");
+const navAnchors = $$(".nav-links a");
 
-
-// Parallax acionado exclusivamente pela rolagem da página.
-const motionPreference = window.matchMedia("(prefers-reduced-motion: reduce)");
-const desktopViewport = window.matchMedia("(min-width: 901px)");
-const heroText = document.querySelector(".hero-text");
-const photo = document.querySelector(".profile-photo-card");
-const codeCard = document.querySelector(".code-card");
-const scrollLayers = [
-  ...document.querySelectorAll(".section-tag, .section-title, .section-content > p, .info-card, .skill-card, .project-card, .contact-card > div:first-child, .contact-item, .footer .container")
-];
-const layers = [heroText, photo, codeCard, ...scrollLayers].filter(Boolean);
-const clamp = (value, limit) => Math.max(-limit, Math.min(limit, value));
-let active = false;
-let frame = 0;
-
-function moveLayer(element, x, y) {
-  if (element) element.style.translate = `${x.toFixed(2)}px ${y.toFixed(2)}px`;
+function onScroll() {
+  const max = document.documentElement.scrollHeight - window.innerHeight;
+  root.style.setProperty("--p", max > 0 ? (window.scrollY / max).toFixed(4) : "0");
+  header.classList.toggle("scrolled", window.scrollY > 10);
 }
+window.addEventListener("scroll", onScroll, { passive: true });
+onScroll();
 
-function renderParallax() {
-  frame = 0;
-  if (!active) return;
-
-  // Leia as posições antes de aplicar o movimento.
-  const heroScroll = clamp(window.scrollY, 700);
-  // Luzes de fundo em velocidades diferentes reforçam a profundidade.
-  const travel = Math.sin(window.scrollY / 650);
-  document.body.style.setProperty("--ambient-x", `${(travel * 45).toFixed(2)}px`);
-  document.body.style.setProperty("--ambient-y", `${(travel * 140).toFixed(2)}px`);
-  document.body.style.setProperty("--ambient-reverse-x", `${(travel * -35).toFixed(2)}px`);
-  document.body.style.setProperty("--ambient-reverse-y", `${(-travel * 100).toFixed(2)}px`);
-  const offsets = scrollLayers.map((element, index) => {
-    const rect = element.getBoundingClientRect();
-    // Remova o deslocamento anterior para evitar realimentação.
-    const previousY = parseFloat(getComputedStyle(element).translate.split(" ")[1]) || 0;
-    const center = rect.top - previousY + rect.height / 2;
-    const isHeading = element.matches(".section-title, .section-tag");
-    const speed = isHeading ? 0.12 : 0.08 + (index % 3) * 0.025;
-    return clamp((window.innerHeight / 2 - center) * speed, isHeading ? 48 : 56);
+const sectionObserver = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    if (!entry.isIntersecting) return;
+    navAnchors.forEach((a) => a.classList.toggle("active", a.getAttribute("href") === `#${entry.target.id}`));
   });
+}, { rootMargin: "-45% 0px -50% 0px" });
+sections.forEach((section) => sectionObserver.observe(section));
 
-  moveLayer(heroText, 0, heroScroll * 0.07);
-  moveLayer(photo, 0, -heroScroll * 0.12);
-  moveLayer(codeCard, 0, -heroScroll * 0.18);
-  scrollLayers.forEach((element, index) => moveLayer(element, 0, offsets[index]));
+/* ---------- Cores do tema para o canvas ---------- */
+let themeRGB = [[139, 123, 255], [53, 224, 255], [255, 122, 217]];
+
+function hexToRgb(hex) {
+  const value = hex.trim().replace("#", "");
+  const full = value.length === 3 ? value.split("").map((c) => c + c).join("") : value;
+  const n = parseInt(full, 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+function readThemeColors() {
+  const styles = getComputedStyle(root);
+  const colors = ["--a1", "--a2", "--a3"].map((name) => styles.getPropertyValue(name)).filter(Boolean);
+  if (colors.length === 3) themeRGB = colors.map(hexToRgb);
 }
 
-function requestParallax() {
-  if (active && !frame) frame = window.requestAnimationFrame(renderParallax);
+applyTheme(store.get("theme") || "aurora", false);
+
+/* ---------- Partículas interativas ---------- */
+const canvas = $("#particles");
+const ctx = canvas.getContext("2d");
+const pointer = { x: -9999, y: -9999 };
+let particles = [];
+let cw = 0;
+let ch = 0;
+let dpr = 1;
+let particleFrame = 0;
+
+function resizeCanvas() {
+  dpr = Math.min(window.devicePixelRatio || 1, 2);
+  cw = window.innerWidth;
+  ch = window.innerHeight;
+  canvas.width = Math.floor(cw * dpr);
+  canvas.height = Math.floor(ch * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  const count = clamp(Math.floor((cw * ch) / 17000), 28, 90);
+  particles = Array.from({ length: count }, () => ({
+    x: Math.random() * cw,
+    y: Math.random() * ch,
+    vx: (Math.random() - 0.5) * 0.35,
+    vy: (Math.random() - 0.5) * 0.35,
+    r: Math.random() * 1.8 + 0.6,
+    depth: Math.random() * 0.8 + 0.2,
+    c: Math.floor(Math.random() * 3)
+  }));
 }
 
-function updateParallax() {
-  active = !motionPreference.matches && desktopViewport.matches;
-  document.body.classList.toggle("parallax-active", active);
-  if (!active) {
-    ["--ambient-x", "--ambient-y", "--ambient-reverse-x", "--ambient-reverse-y"]
-      .forEach((property) => document.body.style.removeProperty(property));
-    window.cancelAnimationFrame(frame);
-    frame = 0;
-    layers.forEach((element) => {
-      element.style.removeProperty("translate");
-      element.style.removeProperty("will-change");
-      element.classList.remove("parallax-smooth");
-    });
-  } else {
-    layers.forEach((element) => {
-      element.style.willChange = "translate";
-      element.classList.add("parallax-smooth");
-    });
-    requestParallax();
+function drawParticles() {
+  ctx.clearRect(0, 0, cw, ch);
+  const scrollShift = window.scrollY * 0.04;
+  const link = 130;
+
+  for (const p of particles) {
+    p.x += p.vx;
+    p.y += p.vy;
+    if (p.x < -20) p.x = cw + 20; else if (p.x > cw + 20) p.x = -20;
+    if (p.y < -20) p.y = ch + 20; else if (p.y > ch + 20) p.y = -20;
+
+    const dx = p.x - pointer.x;
+    const dy = p.y - pointer.y;
+    const dist = Math.hypot(dx, dy);
+    if (dist < 150 && dist > 0) {
+      const force = (150 - dist) / 150;
+      p.x += (dx / dist) * force * 1.6;
+      p.y += (dy / dist) * force * 1.6;
+    }
+  }
+
+  for (let i = 0; i < particles.length; i++) {
+    const a = particles[i];
+    const ay = (((a.y - scrollShift * a.depth) % ch) + ch) % ch;
+    const [r, g, b] = themeRGB[a.c];
+
+    ctx.beginPath();
+    ctx.fillStyle = `rgba(${r},${g},${b},${0.35 + a.depth * 0.45})`;
+    ctx.arc(a.x, ay, a.r * (0.8 + a.depth), 0, Math.PI * 2);
+    ctx.fill();
+
+    for (let j = i + 1; j < particles.length; j++) {
+      const c = particles[j];
+      const cy = (((c.y - scrollShift * c.depth) % ch) + ch) % ch;
+      const d = Math.hypot(a.x - c.x, ay - cy);
+      if (d < link) {
+        ctx.beginPath();
+        ctx.strokeStyle = `rgba(${r},${g},${b},${(1 - d / link) * 0.22})`;
+        ctx.lineWidth = 1;
+        ctx.moveTo(a.x, ay);
+        ctx.lineTo(c.x, cy);
+        ctx.stroke();
+      }
+    }
+  }
+  particleFrame = requestAnimationFrame(drawParticles);
+}
+
+function startParticles() {
+  cancelAnimationFrame(particleFrame);
+  resizeCanvas();
+  if (reduceMotion.matches) { drawParticles(); cancelAnimationFrame(particleFrame); return; }
+  drawParticles();
+}
+window.addEventListener("resize", () => { resizeCanvas(); });
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) cancelAnimationFrame(particleFrame);
+  else if (!reduceMotion.matches) drawParticles();
+});
+startParticles();
+
+/* ---------- Cursor, spotlight, tilt e magnetismo ---------- */
+const glow = $("#cursor-glow");
+const ring = $("#cursor-ring");
+let ringX = 0;
+let ringY = 0;
+let glowX = 0;
+let glowY = 0;
+let cursorFrame = 0;
+
+function cursorLoop() {
+  ringX += (pointer.x - ringX) * 0.22;
+  ringY += (pointer.y - ringY) * 0.22;
+  glowX += (pointer.x - glowX) * 0.08;
+  glowY += (pointer.y - glowY) * 0.08;
+  ring.style.transform = `translate(${ringX.toFixed(1)}px, ${ringY.toFixed(1)}px)`;
+  glow.style.transform = `translate(${glowX.toFixed(1)}px, ${glowY.toFixed(1)}px)`;
+  cursorFrame = requestAnimationFrame(cursorLoop);
+}
+
+window.addEventListener("pointermove", (event) => {
+  pointer.x = event.clientX;
+  pointer.y = event.clientY;
+
+  if (finePointer.matches && !root.classList.contains("has-cursor")) {
+    ringX = glowX = pointer.x;
+    ringY = glowY = pointer.y;
+    root.classList.add("has-cursor");
+    if (!cursorFrame) cursorLoop();
+  }
+
+  const hot = event.target.closest?.("a, button, .tilt, .spot");
+  ring.classList.toggle("hot", Boolean(hot));
+}, { passive: true });
+
+window.addEventListener("pointerleave", () => { pointer.x = pointer.y = -9999; });
+document.addEventListener("mouseleave", () => { pointer.x = pointer.y = -9999; });
+
+/* Spotlight que segue o mouse dentro de cada cartão */
+$$(".spot").forEach((el) => {
+  el.addEventListener("pointermove", (event) => {
+    const rect = el.getBoundingClientRect();
+    el.style.setProperty("--mx", `${event.clientX - rect.left}px`);
+    el.style.setProperty("--my", `${event.clientY - rect.top}px`);
+  });
+});
+
+/* Inclinação 3D + brilho */
+$$(".tilt").forEach((el) => {
+  const strength = parseFloat(el.dataset.tilt) || 10;
+  const glare = $(".glare", el);
+
+  el.addEventListener("pointermove", (event) => {
+    if (reduceMotion.matches || event.pointerType === "touch") return;
+    const rect = el.getBoundingClientRect();
+    const px = (event.clientX - rect.left) / rect.width;
+    const py = (event.clientY - rect.top) / rect.height;
+    el.style.setProperty("--ry", `${((px - 0.5) * strength * 2).toFixed(2)}deg`);
+    el.style.setProperty("--rx", `${((0.5 - py) * strength * 2).toFixed(2)}deg`);
+    if (glare) {
+      glare.style.setProperty("--gx", `${(px * 100).toFixed(1)}%`);
+      glare.style.setProperty("--gy", `${(py * 100).toFixed(1)}%`);
+    }
+  });
+  el.addEventListener("pointerleave", () => {
+    el.style.setProperty("--rx", "0deg");
+    el.style.setProperty("--ry", "0deg");
+  });
+});
+
+/* Botões magnéticos */
+$$(".magnetic").forEach((el) => {
+  el.addEventListener("pointermove", (event) => {
+    if (reduceMotion.matches || event.pointerType === "touch") return;
+    const rect = el.getBoundingClientRect();
+    const x = (event.clientX - (rect.left + rect.width / 2)) * 0.28;
+    const y = (event.clientY - (rect.top + rect.height / 2)) * 0.28;
+    el.style.translate = `${x.toFixed(1)}px ${y.toFixed(1)}px`;
+  });
+  el.addEventListener("pointerleave", () => { el.style.translate = "0px 0px"; });
+});
+
+/* ---------- Marquee infinito (duplica o conteúdo) ---------- */
+const track = $("#marquee-track");
+if (track) {
+  const items = [...track.children];
+  const clone = document.createDocumentFragment();
+  items.forEach((item) => clone.appendChild(item.cloneNode(true)));
+  track.appendChild(clone);
+}
+
+/* ---------- Revelar ao rolar ---------- */
+$$(".stagger").forEach((group) => {
+  $$(":scope > .reveal", group).forEach((child, index) => child.style.setProperty("--d", `${index * 90}ms`));
+});
+
+const counterDone = new WeakSet();
+
+function runCounter(el) {
+  if (counterDone.has(el)) return;
+  counterDone.add(el);
+  const target = parseInt(el.dataset.count, 10);
+  if (reduceMotion.matches) { el.textContent = target; return; }
+  const start = performance.now();
+  const duration = 1400;
+  const step = (now) => {
+    const t = clamp((now - start) / duration, 0, 1);
+    el.textContent = Math.round(target * (1 - Math.pow(1 - t, 3)));
+    if (t < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    if (!entry.isIntersecting) return;
+    entry.target.classList.add("in");
+    $$("[data-count]", entry.target).forEach(runCounter);
+    if (entry.target.id === "terminal") startTerminal();
+    revealObserver.unobserve(entry.target);
+  });
+}, { threshold: 0.15, rootMargin: "0px 0px -6% 0px" });
+
+function startReveal() {
+  $$(".reveal").forEach((el) => revealObserver.observe(el));
+}
+
+/* ---------- Máquina de escrever (cargos) ---------- */
+const typedEl = $("#typed");
+const roles = [
+  "Desenvolvedor em evolução",
+  "Criador de projetos",
+  "Estudante de JavaScript",
+  "Explorador de Node.js"
+];
+let typingStarted = false;
+
+async function typeRoles() {
+  if (typingStarted) return;
+  typingStarted = true;
+  if (reduceMotion.matches) return;
+  let index = 0;
+  typedEl.textContent = "";
+  for (;;) {
+    const word = roles[index % roles.length];
+    for (let i = 1; i <= word.length; i++) {
+      typedEl.textContent = word.slice(0, i);
+      await sleep(55);
+    }
+    await sleep(1700);
+    for (let i = word.length - 1; i >= 0; i--) {
+      typedEl.textContent = word.slice(0, i);
+      await sleep(28);
+    }
+    await sleep(300);
+    index++;
   }
 }
 
-window.addEventListener("scroll", requestParallax, { passive: true });
-window.addEventListener("resize", requestParallax);
-motionPreference.addEventListener("change", updateParallax);
-desktopViewport.addEventListener("change", updateParallax);
-updateParallax();
+/* ---------- Terminal da seção "Sobre" ---------- */
+const terminalBody = $("#terminal-body");
+let terminalStarted = false;
 
-
-/* ============================================================
-   Parallax de fundo: símbolos de programação desfocados
-   - 3 camadas de profundidade (longe, meio, perto)
-   - cada símbolo sobe/desce em velocidade própria conforme a rolagem
-   - ao sair por um lado da tela, reaparece pelo outro (loop infinito)
-   - também balança no eixo X e gira levemente
-   - todo o estilo é aplicado via CSSOM (compatível com a CSP do Vercel)
-   ============================================================ */
-const SVG_NS = "http://www.w3.org/2000/svg";
-
-const SVG_SHAPES = {
-  hex: [["polygon", { points: "12 2 21 7 21 17 12 22 3 17 3 7" }]],
-  ring: [["circle", { cx: 12, cy: 12, r: 9 }]],
-  tri: [["polygon", { points: "12 3 22 20 2 20" }]],
-  branch: [
-    ["circle", { cx: 6, cy: 5, r: 2.5 }],
-    ["circle", { cx: 6, cy: 19, r: 2.5 }],
-    ["circle", { cx: 18, cy: 9, r: 2.5 }],
-    ["path", { d: "M6 7.5v9M18 11.5c0 4-12 1.5-12 5" }]
-  ],
-  dots: [5, 12, 19].flatMap((cy) =>
-    [5, 12, 19].map((cx) => ["circle", { cx, cy, r: 1.4, fill: "currentColor", stroke: "none" }])
-  )
-};
-
-// Camadas: speed = quanto o símbolo acompanha a rolagem (menor = mais "distante")
-const BG_DEPTHS = [
-  { speed: 0.12, blur: 5, opacity: 0.22 }, // 0: longe
-  { speed: 0.30, blur: 3, opacity: 0.28 }, // 1: meio
-  { speed: 0.60, blur: 9, opacity: 0.16 }  // 2: perto (bokeh grande)
+const terminalScript = [
+  { cmd: "whoami", out: "matheus-souza" },
+  { cmd: "cat foco.txt", out: "programação, projetos e muita curiosidade" },
+  { cmd: "ls objetivos/", out: "aprender/  construir/  evoluir/" },
+  { cmd: "echo $STATUS", out: "em evolução constante ✦" }
 ];
 
-const BG_COLORS = ["#6ea8ff", "#91f0d0", "#cdd8e8"];
-
-// [conteúdo, x (0–1 da largura), y inicial (0–1), tamanho px, camada, cor, rotação, giro por px rolado]
-const BG_SYMBOLS = [
-  // Longe
-  ["{ }",      0.06, 0.10, 38, 0, 0, -12,  0.010],
-  ["</>",      0.88, 0.22, 34, 0, 1,   8, -0.008],
-  ["svg:hex",  0.30, 0.45, 40, 0, 2,   0,  0.020],
-  ["01",       0.72, 0.58, 30, 0, 0,   0,  0],
-  ["=>",       0.14, 0.72, 36, 0, 1,  -6,  0.008],
-  ["svg:dots", 0.52, 0.86, 34, 0, 2,   0,  0],
-  ["( )",      0.94, 0.78, 32, 0, 0,  10, -0.010],
-  ["//",       0.42, 0.05, 30, 0, 1,   0,  0],
-  ["svg:ring", 0.64, 0.35, 36, 0, 0,   0,  0],
-  ["&&",       0.22, 0.92, 30, 0, 2,   0,  0],
-  // Meio
-  ["svg:branch", 0.10, 0.30, 56, 1, 0,   0,  0.016],
-  ["[ ]",        0.80, 0.08, 52, 1, 1,   6, -0.012],
-  [">_",         0.36, 0.28, 48, 1, 2,   0,  0],
-  ["svg:tri",    0.90, 0.50, 50, 1, 0,  14,  0.024],
-  [";",          0.56, 0.62, 64, 1, 1,   0,  0],
-  ["<div>",      0.20, 0.55, 44, 1, 2,  -8,  0.010],
-  ["svg:hex",    0.70, 0.90, 58, 1, 1,   0, -0.020],
-  ["#",          0.04, 0.80, 50, 1, 0,   0,  0.014],
-  ["!==",        0.48, 0.75, 44, 1, 0,   0,  0],
-  ["{ }",        0.84, 0.34, 60, 1, 2,  10,  0.010],
-  // Perto
-  ["{ }",        0.02, 0.20, 140, 2, 0, -10,  0.012],
-  ["</>",        0.78, 0.60, 120, 2, 1,   6, -0.010],
-  ["svg:hex",    0.40, 0.88, 130, 2, 0,   0,  0.020],
-  ["svg:ring",   0.92, 0.12, 110, 2, 1,   0,  0],
-  ["( )",        0.30, 0.50, 120, 2, 2,   0,  0]
-];
-
-const bgLayer = document.createElement("div");
-bgLayer.className = "bg-symbols";
-bgLayer.setAttribute("aria-hidden", "true");
-document.body.prepend(bgLayer);
-
-const mobileViewport = window.matchMedia("(max-width: 680px)");
-let bgItems = [];
-let bgTarget = 0;
-let bgCurrent = 0;
-let bgFrame = 0;
-
-function createSvgShape(name) {
-  const svg = document.createElementNS(SVG_NS, "svg");
-  svg.setAttribute("viewBox", "0 0 24 24");
-  (SVG_SHAPES[name] || []).forEach(([tag, attrs]) => {
-    const node = document.createElementNS(SVG_NS, tag);
-    Object.entries(attrs).forEach(([key, value]) => node.setAttribute(key, value));
-    svg.appendChild(node);
+function line(parts) {
+  const row = document.createElement("div");
+  parts.forEach(([cls, text]) => {
+    const span = document.createElement("span");
+    span.className = cls;
+    span.textContent = text;
+    row.appendChild(span);
   });
-  return svg;
+  terminalBody.appendChild(row);
+  return row;
 }
 
-function buildBackgroundSymbols() {
-  bgLayer.replaceChildren();
-  bgItems = [];
+async function startTerminal() {
+  if (terminalStarted) return;
+  terminalStarted = true;
+  const instant = reduceMotion.matches;
 
-  const small = mobileViewport.matches;
-  const list = small ? BG_SYMBOLS.filter((_, index) => index % 2 === 0) : BG_SYMBOLS;
-  const scale = small ? 0.7 : 1;
+  for (const step of terminalScript) {
+    const row = line([["p", "➜ "], ["hl", "~ "], ["c", ""]]);
+    const cmd = row.lastChild;
+    const cursor = document.createElement("span");
+    cursor.className = "cur";
+    row.appendChild(cursor);
 
-  list.forEach(([content, x, base, size, depth, color, rotation, spin], index) => {
-    const layer = BG_DEPTHS[depth];
-    const element = document.createElement("div");
-    element.className = `bg-symbol depth-${depth}`;
-
-    if (content.startsWith("svg:")) {
-      element.appendChild(createSvgShape(content.slice(4)));
-    } else {
-      element.textContent = content;
+    for (let i = 1; i <= step.cmd.length; i++) {
+      cmd.textContent = step.cmd.slice(0, i);
+      if (!instant) await sleep(55);
     }
-
-    const px = size * scale;
-    element.style.fontSize = `${px}px`;
-    element.style.color = BG_COLORS[color];
-    element.style.opacity = String(layer.opacity);
-    element.style.filter = `blur(${layer.blur * (small ? 0.8 : 1)}px)`;
-
-    bgLayer.appendChild(element);
-    bgItems.push({
-      element,
-      x,
-      base,
-      speed: layer.speed,
-      margin: px * 1.5 + layer.blur * 3,
-      rotation,
-      spin,
-      sway: 14 + depth * 14,
-      wave: 380 + index * 53,
-      phase: index * 1.7
-    });
-  });
-
-  drawBackgroundSymbols(bgCurrent);
+    if (!instant) await sleep(260);
+    cursor.remove();
+    line([["o", step.out]]);
+    if (!instant) await sleep(320);
+  }
+  const last = line([["p", "➜ "], ["hl", "~ "]]);
+  const cursor = document.createElement("span");
+  cursor.className = "cur";
+  last.appendChild(cursor);
 }
 
-const wrap = (value, range) => ((value % range) + range) % range;
+/* ---------- Pré-carregamento ---------- */
+const preloader = $("#preloader");
+const bootText = $("#boot-text");
+let bootFinished = false;
 
-function drawBackgroundSymbols(scroll) {
-  const vw = window.innerWidth;
-  const vh = window.innerHeight;
-  const still = motionPreference.matches;
-
-  bgItems.forEach((item) => {
-    const range = vh + item.margin * 2;
-    const offset = still ? 0 : scroll * item.speed;
-    const y = wrap(item.base * range - offset, range) - item.margin;
-    const sway = still ? 0 : Math.sin(scroll / item.wave + item.phase) * item.sway;
-    const x = item.x * vw + sway;
-    const angle = item.rotation + (still ? 0 : scroll * item.spin);
-
-    item.element.style.translate = `${x.toFixed(1)}px ${y.toFixed(1)}px`;
-    item.element.style.rotate = `${angle.toFixed(2)}deg`;
-  });
+function finishBoot() {
+  if (bootFinished) return;
+  bootFinished = true;
+  preloader.classList.add("done");
+  document.body.classList.remove("locked");
+  startReveal();
+  typeRoles();
+  session.set("booted", "1");
+  setTimeout(() => preloader.remove(), 1200);
 }
 
-function tickBackground() {
-  // Inércia: o fundo "alcança" a rolagem aos poucos, o que reforça a profundidade.
-  bgCurrent += (bgTarget - bgCurrent) * 0.12;
-  if (Math.abs(bgTarget - bgCurrent) < 0.1) bgCurrent = bgTarget;
-  drawBackgroundSymbols(bgCurrent);
-  bgFrame = bgCurrent !== bgTarget ? window.requestAnimationFrame(tickBackground) : 0;
+async function runBoot() {
+  const lines = [
+    ["> iniciando portfólio", "..."],
+    ["> carregando estilo", " ✓"],
+    ["> compilando criatividade", " ✓"],
+    ["> pronto para decolar", " 🚀"]
+  ];
+  preloader.addEventListener("click", finishBoot);
+
+  for (let i = 0; i < lines.length; i++) {
+    if (bootFinished) return;
+    const row = document.createElement("div");
+    const base = document.createElement("span");
+    const tail = document.createElement("span");
+    tail.className = "ok";
+    row.append(base, tail);
+    bootText.appendChild(row);
+
+    for (let c = 1; c <= lines[i][0].length; c++) {
+      base.textContent = lines[i][0].slice(0, c);
+      await sleep(14);
+    }
+    tail.textContent = lines[i][1];
+    $(".boot-bar").style.setProperty("--p", String(((i + 1) / lines.length) * 100));
+    await sleep(230);
+  }
+  await sleep(250);
+  finishBoot();
 }
 
-function onBackgroundScroll() {
-  if (motionPreference.matches) return;
-  bgTarget = window.scrollY;
-  if (!bgFrame) bgFrame = window.requestAnimationFrame(tickBackground);
+if (reduceMotion.matches || session.get("booted") === "1") {
+  preloader.remove();
+  bootFinished = true;
+  startReveal();
+  typeRoles();
+} else {
+  document.body.classList.add("locked");
+  runBoot();
+  setTimeout(finishBoot, 4500); // segurança
 }
 
-function onBackgroundResize() {
-  drawBackgroundSymbols(bgCurrent);
-}
+/* ---------- Easter egg: código Konami ---------- */
+const konami = ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", "b", "a"];
+let konamiIndex = 0;
 
-window.addEventListener("scroll", onBackgroundScroll, { passive: true });
-window.addEventListener("resize", onBackgroundResize);
-mobileViewport.addEventListener("change", buildBackgroundSymbols);
-motionPreference.addEventListener("change", () => {
-  bgTarget = bgCurrent = window.scrollY;
-  drawBackgroundSymbols(bgCurrent);
+document.addEventListener("keydown", (event) => {
+  const key = event.key.length === 1 ? event.key.toLowerCase() : event.key;
+  konamiIndex = key === konami[konamiIndex] ? konamiIndex + 1 : key === konami[0] ? 1 : 0;
+  if (konamiIndex === konami.length) {
+    konamiIndex = 0;
+    const on = document.body.classList.toggle("party");
+    showToast(on ? "Modo festa ativado 🎉" : "Modo festa desativado", on ? "↑ ↑ ↓ ↓ ← → ← → B A" : "voltando ao normal");
+  }
 });
-
-bgTarget = bgCurrent = window.scrollY;
-buildBackgroundSymbols();
