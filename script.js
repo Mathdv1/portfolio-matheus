@@ -354,7 +354,6 @@ const revealObserver = new IntersectionObserver((entries) => {
     if (!entry.isIntersecting) return;
     entry.target.classList.add("in");
     $$("[data-count]", entry.target).forEach(runCounter);
-    if (entry.target.id === "terminal") startTerminal();
     revealObserver.unobserve(entry.target);
   });
 }, { threshold: 0.15, rootMargin: "0px 0px -6% 0px" });
@@ -393,56 +392,6 @@ async function typeRoles() {
     await sleep(300);
     index++;
   }
-}
-
-/* ---------- Terminal da seção "Sobre" ---------- */
-const terminalBody = $("#terminal-body");
-let terminalStarted = false;
-
-const terminalScript = [
-  { cmd: "whoami", out: "matheus-souza" },
-  { cmd: "cat foco.txt", out: "programação, projetos e muita curiosidade" },
-  { cmd: "ls objetivos/", out: "aprender/  construir/  evoluir/" },
-  { cmd: "echo $STATUS", out: "em evolução constante ✦" }
-];
-
-function line(parts) {
-  const row = document.createElement("div");
-  parts.forEach(([cls, text]) => {
-    const span = document.createElement("span");
-    span.className = cls;
-    span.textContent = text;
-    row.appendChild(span);
-  });
-  terminalBody.appendChild(row);
-  return row;
-}
-
-async function startTerminal() {
-  if (terminalStarted) return;
-  terminalStarted = true;
-  const instant = reduceMotion.matches;
-
-  for (const step of terminalScript) {
-    const row = line([["p", "➜ "], ["hl", "~ "], ["c", ""]]);
-    const cmd = row.lastChild;
-    const cursor = document.createElement("span");
-    cursor.className = "cur";
-    row.appendChild(cursor);
-
-    for (let i = 1; i <= step.cmd.length; i++) {
-      cmd.textContent = step.cmd.slice(0, i);
-      if (!instant) await sleep(55);
-    }
-    if (!instant) await sleep(260);
-    cursor.remove();
-    line([["o", step.out]]);
-    if (!instant) await sleep(320);
-  }
-  const last = line([["p", "➜ "], ["hl", "~ "]]);
-  const cursor = document.createElement("span");
-  cursor.className = "cur";
-  last.appendChild(cursor);
 }
 
 /* ---------- Pré-carregamento ---------- */
