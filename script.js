@@ -157,12 +157,16 @@ let dpr = 1;
 let particleFrame = 0;
 
 function resizeCanvas() {
+  const prevW = cw;
   dpr = Math.min(window.devicePixelRatio || 1, 2);
   cw = window.innerWidth;
   ch = window.innerHeight;
   canvas.width = Math.floor(cw * dpr);
   canvas.height = Math.floor(ch * dpr);
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  // No celular a barra de endereço muda só a altura ao rolar: mantém as partículas
+  if (particles.length && cw === prevW) return;
 
   const count = clamp(Math.floor((cw * ch) / 17000), 28, 90);
   particles = Array.from({ length: count }, () => ({
@@ -180,6 +184,7 @@ function drawParticles() {
   ctx.clearRect(0, 0, cw, ch);
   const scrollShift = window.scrollY * 0.04;
   const link = 130;
+  const shiftedY = (p) => (((p.y - scrollShift * p.depth) % ch) + ch) % ch;
 
   for (const p of particles) {
     p.x += p.vx;
@@ -187,8 +192,9 @@ function drawParticles() {
     if (p.x < -20) p.x = cw + 20; else if (p.x > cw + 20) p.x = -20;
     if (p.y < -20) p.y = ch + 20; else if (p.y > ch + 20) p.y = -20;
 
+    // Compara com a posição desenhada (deslocada pela rolagem), não com a original
     const dx = p.x - pointer.x;
-    const dy = p.y - pointer.y;
+    const dy = shiftedY(p) - pointer.y;
     const dist = Math.hypot(dx, dy);
     if (dist < 150 && dist > 0) {
       const force = (150 - dist) / 150;
@@ -199,7 +205,7 @@ function drawParticles() {
 
   for (let i = 0; i < particles.length; i++) {
     const a = particles[i];
-    const ay = (((a.y - scrollShift * a.depth) % ch) + ch) % ch;
+    const ay = shiftedY(a);
     const [r, g, b] = themeRGB[a.c];
 
     ctx.beginPath();
@@ -209,7 +215,7 @@ function drawParticles() {
 
     for (let j = i + 1; j < particles.length; j++) {
       const c = particles[j];
-      const cy = (((c.y - scrollShift * c.depth) % ch) + ch) % ch;
+      const cy = shiftedY(c);
       const d = Math.hypot(a.x - c.x, ay - cy);
       if (d < link) {
         ctx.beginPath();
@@ -230,7 +236,11 @@ function startParticles() {
   if (reduceMotion.matches) { drawParticles(); cancelAnimationFrame(particleFrame); return; }
   drawParticles();
 }
-window.addEventListener("resize", () => { resizeCanvas(); });
+window.addEventListener("resize", () => {
+  resizeCanvas();
+  // Com movimento reduzido não há loop: redesenha o quadro parado (o resize limpa o canvas)
+  if (reduceMotion.matches) { drawParticles(); cancelAnimationFrame(particleFrame); }
+});
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) cancelAnimationFrame(particleFrame);
   else if (!reduceMotion.matches) drawParticles();
