@@ -64,14 +64,16 @@ $$("[data-theme-set]").forEach((button) => {
     themeToggle.setAttribute("aria-expanded", "false");
   });
 });
+function closeThemeMenu() {
+  themePicker.classList.remove("open");
+  themeToggle.setAttribute("aria-expanded", "false");
+}
 document.addEventListener("click", (event) => {
-  if (!themePicker.contains(event.target)) {
-    themePicker.classList.remove("open");
-    themeToggle.setAttribute("aria-expanded", "false");
-  }
+  if (!themePicker.contains(event.target)) closeThemeMenu();
+  if (!navLinks.contains(event.target) && !menuBtn.contains(event.target)) setMenu(false);
 });
 document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape") { themePicker.classList.remove("open"); setMenu(false); }
+  if (event.key === "Escape") { closeThemeMenu(); setMenu(false); }
 });
 
 /* ---------- Toast + copiar Discord ---------- */

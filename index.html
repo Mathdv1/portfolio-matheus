@@ -9,19 +9,39 @@
   <meta name="robots" content="index, follow">
   <meta name="theme-color" content="#050814">
 
+  <link rel="canonical" href="https://portfolio-matheus-one.vercel.app/">
+
   <meta property="og:type" content="website">
   <meta property="og:locale" content="pt_BR">
   <meta property="og:site_name" content="Portfólio de Matheus Souza">
+  <meta property="og:url" content="https://portfolio-matheus-one.vercel.app/">
   <meta property="og:title" content="Matheus Souza | Portfólio">
   <meta property="og:description" content="Portfólio de Matheus Souza, desenvolvedor em evolução. Conheça meus projetos, habilidades e formas de contato.">
+  <meta property="og:image" content="https://portfolio-matheus-one.vercel.app/assets/matheus-profile.jpg">
+  <meta property="og:image:alt" content="Foto de perfil de Matheus Souza">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Matheus Souza | Portfólio">
   <meta name="twitter:description" content="Portfólio de Matheus Souza, desenvolvedor em evolução. Conheça meus projetos, habilidades e formas de contato.">
+  <meta name="twitter:image" content="https://portfolio-matheus-one.vercel.app/assets/matheus-profile.jpg">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Matheus Souza",
+    "url": "https://portfolio-matheus-one.vercel.app/",
+    "image": "https://portfolio-matheus-one.vercel.app/assets/matheus-profile.jpg",
+    "jobTitle": "Desenvolvedor",
+    "sameAs": ["https://github.com/Mathdv1", "https://www.instagram.com/bytheuswss/"]
+  }
+  </script>
 
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
+  <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
 
   <!-- Ícones reutilizáveis -->
   <svg class="sprite" aria-hidden="true" focusable="false">
@@ -85,7 +105,7 @@
     </nav>
   </header>
 
-  <main>
+  <main id="conteudo" tabindex="-1">
     <!-- ================= HERO ================= -->
     <section class="hero section" id="inicio">
       <div class="container hero-grid">
@@ -165,7 +185,7 @@
     <!-- ================= MARQUEE ================= -->
     <div class="marquee" aria-hidden="true">
       <div class="marquee-track" id="marquee-track">
-        <span>HTML</span><span>CSS</span><span>JavaScript</span><span>Node.js</span><span>Git</span><span>GitHub</span><span>Automações</span><span>Design</span><span>Responsivo</span>
+        <span>HTML</span><span>CSS</span><span>JavaScript</span><span>Node.js</span><span>React</span><span>Supabase</span><span>Git</span><span>GitHub</span><span>Vercel</span><span>Automações</span><span>Design</span><span>Responsivo</span>
       </div>
     </div>
 
@@ -199,8 +219,8 @@
           </div>
 
           <div class="counters stagger">
-            <div class="counter reveal"><b data-count="2">0</b><span>projetos</span></div>
-            <div class="counter reveal"><b data-count="5">0</b><span>tecnologias</span></div>
+            <div class="counter reveal"><b data-count="3">0</b><span>projetos</span></div>
+            <div class="counter reveal"><b data-count="8">0</b><span>tecnologias</span></div>
             <div class="counter reveal"><b>∞</b><span>curiosidade</span></div>
           </div>
         </div>
@@ -220,7 +240,10 @@
           <div class="skill-card spot s-css reveal"><span class="skill-icon">CSS</span><div><h3>CSS</h3><p>Visual, layout e responsividade.</p></div></div>
           <div class="skill-card spot s-js reveal"><span class="skill-icon">JS</span><div><h3>JavaScript</h3><p>Interações e lógica do site.</p></div></div>
           <div class="skill-card spot s-node reveal"><span class="skill-icon">N</span><div><h3>Node.js</h3><p>Back-end e automações.</p></div></div>
+          <div class="skill-card spot s-react reveal"><span class="skill-icon">RE</span><div><h3>React</h3><p>Interfaces em componentes.</p></div></div>
+          <div class="skill-card spot s-supabase reveal"><span class="skill-icon">SB</span><div><h3>Supabase</h3><p>Banco de dados e login.</p></div></div>
           <div class="skill-card spot s-git reveal"><span class="skill-icon">GIT</span><div><h3>Git / GitHub</h3><p>Versionamento e projetos.</p></div></div>
+          <div class="skill-card spot s-vercel reveal"><span class="skill-icon">▲</span><div><h3>Vercel</h3><p>Deploy e hospedagem.</p></div></div>
         </div>
       </div>
     </section>
@@ -235,6 +258,28 @@
 
         <div class="projects-grid stagger">
           <article class="project-card tilt spot reveal" data-tilt="8">
+            <div class="project-image project-four">
+              <svg class="art" viewBox="0 0 220 140" aria-hidden="true">
+                <rect x="22" y="16" width="176" height="108" rx="12" class="win"/>
+                <circle cx="76" cy="70" r="30" class="ring"/>
+                <path d="M76 40a30 30 0 0 1 28 40" class="ring-fill"/>
+                <rect x="124" y="46" width="56" height="9" rx="4.5" class="bar"/>
+                <rect x="124" y="64" width="44" height="7" rx="3.5" class="bar thin"/>
+                <rect x="124" y="80" width="50" height="7" rx="3.5" class="bar thin"/>
+              </svg>
+              <span class="num">01</span>
+              <span class="glare" aria-hidden="true"></span>
+            </div>
+            <div class="project-body">
+              <p class="project-type">WEB APP / FINANÇAS</p>
+              <h3>Pulso</h3>
+              <p>Controle financeiro completo para uso pessoal: contas e cartões, compras parceladas, lançamentos recorrentes, metas, dívidas e gráficos de evolução mês a mês.</p>
+              <div class="project-tags"><span>React</span><span>Supabase</span><span>Gráficos</span><span>Login</span></div>
+              <span class="project-link soon private">Uso pessoal · acesso com senha</span>
+            </div>
+          </article>
+
+          <article class="project-card tilt spot reveal" data-tilt="8">
             <div class="project-image project-one">
               <svg class="art" viewBox="0 0 220 140" aria-hidden="true">
                 <rect x="20" y="22" width="132" height="30" rx="14" class="bubble"/>
@@ -242,7 +287,7 @@
                 <rect x="20" y="102" width="86" height="24" rx="12" class="bubble"/>
                 <circle cx="40" cy="37" r="4" class="dot"/><circle cx="54" cy="37" r="4" class="dot d2"/><circle cx="68" cy="37" r="4" class="dot d3"/>
               </svg>
-              <span class="num">01</span>
+              <span class="num">02</span>
               <span class="glare" aria-hidden="true"></span>
             </div>
             <div class="project-body">
@@ -267,7 +312,7 @@
                 <rect x="38" y="88" width="100" height="8" rx="4" class="bar thin"/>
                 <rect x="38" y="104" width="46" height="10" rx="5" class="bar"/>
               </svg>
-              <span class="num">02</span>
+              <span class="num">03</span>
               <span class="glare" aria-hidden="true"></span>
             </div>
             <div class="project-body">
