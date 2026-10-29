@@ -442,7 +442,8 @@ em { font-style: normal; background: var(--grad); background-size: 200% 100%; -w
 .counter span { color: var(--muted); font-size: 0.86rem; font-weight: 600; }
 
 /* ---------- Habilidades ---------- */
-.skills-grid { margin-top: 46px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.skills-grid { margin-top: 46px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; }
+.skills-grid .skill-card { flex-direction: column; align-items: flex-start; }
 
 .skill-card { --c: var(--a1); display: flex; gap: 16px; align-items: center; padding: 24px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--glass); backdrop-filter: blur(12px); overflow: hidden; transition: transform 0.35s var(--ease), border-color 0.3s; }
 .skill-card:hover { transform: translateY(-8px) rotate(-0.6deg); border-color: color-mix(in srgb, var(--c) 55%, transparent); }
@@ -454,10 +455,11 @@ em { font-style: normal; background: var(--grad); background-size: 200% 100%; -w
 
 .s-html { --c: #ff8a50; } .s-css { --c: #4aa8ff; } .s-js { --c: #ffd84a; }
 .s-node { --c: #6fe08a; } .s-git { --c: #ff6b5e; }
+.s-php { --c: #8993be; } .s-mysql { --c: #f29111; }
 .s-react { --c: #61dafb; } .s-supabase { --c: #3ecf8e; } .s-vercel { --c: #e8ecf5; }
 
 /* ---------- Projetos ---------- */
-.projects-grid { margin-top: 46px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.projects-grid { margin-top: 46px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
 
 .project-card { overflow: hidden; background: var(--glass); border: 1px solid var(--line); border-radius: var(--radius); backdrop-filter: blur(12px); box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3); }
 
@@ -469,6 +471,7 @@ em { font-style: normal; background: var(--grad); background-size: 200% 100%; -w
 .project-one { background: radial-gradient(circle at 75% 25%, rgba(120, 255, 210, 0.45), transparent 32%), linear-gradient(140deg, #0c1f3a, #0b4a52); }
 .project-two { background: radial-gradient(circle at 25% 20%, rgba(255, 138, 100, 0.5), transparent 30%), linear-gradient(140deg, #2a1646, #3d1a4f 60%, #5a1f55); }
 .project-three { background: radial-gradient(circle at 70% 20%, rgba(255, 255, 255, 0.28), transparent 26%), linear-gradient(140deg, #14284a, #1f2f6a 60%, #3a2a78); }
+.project-five { background: radial-gradient(circle at 72% 28%, rgba(255, 196, 92, 0.42), transparent 32%), linear-gradient(140deg, #2b1a10, #3f2414 55%, #4a1f3a); }
 .project-four { background: radial-gradient(circle at 30% 30%, rgba(62, 207, 142, 0.45), transparent 32%), linear-gradient(140deg, #0b2a26, #10383a 60%, #17324f); }
 
 .art { position: absolute; right: 18px; top: 16px; width: 62%; z-index: 1; filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.35)); animation: floatArt 6s ease-in-out infinite; }
@@ -482,6 +485,9 @@ em { font-style: normal; background: var(--grad); background-size: 200% 100%; -w
 .art .win { fill: rgba(255, 255, 255, 0.1); stroke: rgba(255, 255, 255, 0.5); stroke-width: 1.4; }
 .art .winline { stroke: rgba(255, 255, 255, 0.35); stroke-width: 1.2; }
 .art .bar { fill: rgba(255, 255, 255, 0.6); } .art .bar.thin { fill: rgba(255, 255, 255, 0.28); }
+.art .staff { fill: none; stroke: rgba(255, 255, 255, 0.3); stroke-width: 1.4; }
+.art .note { fill: #ffd27a; }
+.art .stem { fill: none; stroke: #ffd27a; stroke-width: 3; stroke-linecap: round; }
 .art .ring { fill: none; stroke: rgba(255, 255, 255, 0.18); stroke-width: 10; }
 .art .ring-fill { fill: none; stroke: #7ff0c4; stroke-width: 10; stroke-linecap: round; }
 
@@ -491,6 +497,7 @@ em { font-style: normal; background: var(--grad); background-size: 200% 100%; -w
 .project-tags { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0; }
 .project-tags span { font: 600 0.74rem var(--mono); color: #d6e0f4; border: 1px solid var(--line); background: rgba(255, 255, 255, 0.04); padding: 6px 10px; border-radius: 9px; }
 .project-link { display: inline-flex; align-items: center; gap: 6px; color: var(--a2); font-weight: 800; font-size: 0.92rem; }
+.project-links { display: flex; flex-wrap: wrap; gap: 22px; }
 .project-link svg { width: 16px; height: 16px; transition: transform 0.25s var(--ease); }
 a.project-link:hover svg { transform: translate(3px, -3px); }
 .project-link.soon { color: var(--muted); font-family: var(--mono); font-size: 0.82rem; }
